@@ -277,12 +277,41 @@ exports.xtoolbox =
       <block type="lists_sort"></block>
     </category>
 
-
     <sep></sep>
     <category name="VARIABLES" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
     <category name="FUNCTIONS" colour="%{BKY_PROCEDURES_HUE}" custom="PROCEDURE"></category>
     <sep></sep>
 
+	
+	<category name="ROBO_BLK" colour="%{BKY_VARIABLES_HUE}">
+		<block type="robo_move"></block>
+		<block type="robo_stop"></block>
+		<block type="robo_delay"></block>
+		<block type="robo_led_left"></block>
+		<block type="robo_led_right"></block>
+		<block type="robo_beep"></block>
+	</category>
+
+	<category name="CAM_BLK" colour="%{BKY_VARIABLES_HUE}">
+		<block type="robo_cam_run"></block>
+		<block type="robo_get_img"></block>
+		<block type="robo_dis_ang"></block>
+	</category>
+	
+	
+	<category name="AI_BLK" colour="%{BKY_VARIABLES_HUE}">
+		<block type="robo_mark_det"></block>
+		<block type="robo_lane_det"></block>
+	</category>
+
+	<category name="DATA_BLK" colour="%{BKY_VARIABLES_HUE}">
+		<block type="robo_set_speed"></block>
+		<block type="robo_dir_clean"></block>
+		<block type="robo_hp_con"></block>
+	</category>
+	
+	<sep></sep>
+	
 	</xml>
     `
   

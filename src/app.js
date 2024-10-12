@@ -1,10 +1,14 @@
 const Blockly = require('blockly');  // Blockly 전체 모듈 가져오기
-//require('blockly/blocks')
 require('blockly/javascript');
 
 require('./custom-dialog')
 
+// Block Load
 require('./ublock/robo.js')
+require('./ublock/cam.js')
+require('./ublock/det.js')
+require('./ublock/data.js')
+
 
 
 // JavaScript 코드 생성기 로드 및 할당
@@ -208,9 +212,9 @@ initBlockly = () => {
 			toolbox: xtoolbox,
             disableContextMenu: false,  // 컨텍스트 메뉴 활성화
             
-            renderer: 'geras',  // thrasos 또는 'geras', 'zelos', 'minimalist' 중 하나
+            renderer: 'thrasos',  // thrasos 또는 'geras', 'zelos', 'minimalist' 중 하나
             //theme: Blockly.Themes.Classic,  // 또는 원하는 테마
-            theme: Blockly.Themes.Zelos,  // 또는 원하는 테마
+            theme: Blockly.Themes.Classic,  // 또는 원하는 테마
             
 
 			zoom: {

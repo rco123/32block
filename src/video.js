@@ -52,7 +52,7 @@ AddAiCarImage = () => {
 
 removeAiCarImage = () => {
     const camViewBox = document.getElementById('cam_view_box');
-    
+
     // 특정 id를 가진 canvas 태그를 찾아 제거
     const canvas = document.getElementById('aicarpng');
     if (canvas && camViewBox.contains(canvas)) {
@@ -134,20 +134,45 @@ exports.disCamViewWindow = () => {
             context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스를 지우고 새로 그리기
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+            // Image DATA 추출
+            // 1. 임시 캔버스 생성
+            const tempCanvas = document.createElement('canvas');
+            const tempContext = tempCanvas.getContext('2d');
+            // 2. 들어온 이미지의 크기로 임시 캔버스 크기 설정
+            tempCanvas.width = img.width;
+            tempCanvas.height = img.height;
+            // 3. 임시 캔버스에 이미지를 그리기 (원본 크기로)
+            tempContext.drawImage(img, 0, 0, img.width, img.height);
+            // 4. getImageData로 픽셀 데이터 추출
+            const imageData = tempContext.getImageData(0, 0, img.width, img.height);
+            console.log('ImageData:', imageData);
+            // 7. 임시로 생성한 캔버스를 삭제
+            tempCanvas.remove();
+
+
+            const imageEvent = new CustomEvent('imageReady', {
+                detail: { img: imageData }
+            });
+            
+            // 이벤트 디스패치 (발생시킴)
+            window.dispatchEvent(imageEvent);
+
             // 새로운 이미지를 가져오기 위해 src를 재설정
             img.src = 'http://192.168.0.25:82/alt_stream';
+
         }
     };
 
     img.onerror = (error) => {
         console.error('Error loading MJPEG stream:', error);
     };
-
     console.log("Camera stream started and canvas set.");
 };
 
 
-const captureAndSaveImage = (canvas)=> {
+
+
+const captureAndSaveImage = (canvas) => {
     // Canvas의 데이터를 Blob 형태로 변환 (JPG 형식)
     canvas.toBlob((blob) => {
         if (blob) {
@@ -156,7 +181,7 @@ const captureAndSaveImage = (canvas)=> {
     }, 'image/jpeg');
 }
 
-const saveImage =  async (blob)=> {
+const saveImage = async (blob) => {
     const arrayBuffer = await blob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
