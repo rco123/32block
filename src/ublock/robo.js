@@ -78,48 +78,48 @@ Blockly.Blocks['repeat_n_times'] = {
 
 
 
-javascriptGenerator.forBlock['while_loop'] = function (block) {
-  const condition = javascriptGenerator.valueToCode(block, 'CONDITION', javascriptGenerator.ORDER_NONE);
-  const branch = javascriptGenerator.statementToCode(block, 'DO');
+// javascriptGenerator.forBlock['while_loop'] = function (block) {
+//   const condition = javascriptGenerator.valueToCode(block, 'CONDITION', javascriptGenerator.ORDER_NONE);
+//   const branch = javascriptGenerator.statementToCode(block, 'DO');
   
-  const code = `while (${condition} && runStop) {\n${branch}}\n`;
-  return code;
-};
+//   const code = `while (${condition} && runStop) {\n${branch}}\n`;
+//   return code;
+// };
 
 
 
-// JavaScript 코드 생성기 등록 (forBlock 스타일)
-javascriptGenerator.forBlock['repeat_n_times'] = function (block) {
-  const repeats = javascriptGenerator.valueToCode(
-    block,
-    'TIMES',
-    javascriptGenerator.ORDER_ATOMIC
-  ) || '0';
+// // JavaScript 코드 생성기 등록 (forBlock 스타일)
+// javascriptGenerator.forBlock['repeat_n_times'] = function (block) {
+//   const repeats = javascriptGenerator.valueToCode(
+//     block,
+//     'TIMES',
+//     javascriptGenerator.ORDER_ATOMIC
+//   ) || '0';
 
-  const branch = javascriptGenerator.statementToCode(block, 'DO');
-  const code = `for (let count = 0; count < ${repeats} && runStop ; count++) {\n
-      await delay(1);\n
-      ${branch}}\n`;
+//   const branch = javascriptGenerator.statementToCode(block, 'DO');
+//   const code = `for (let count = 0; count < ${repeats} && runStop ; count++) {\n
+//       await delay(1);\n
+//       ${branch}}\n`;
   
-  return code;
-};
+//   return code;
+// };
 
 
 
-// JavaScript 코드 생성기 등록
-javascriptGenerator.forBlock['led_on'] = function (block) {
-    return 'turnLedOn();\n';
-  };
+// // JavaScript 코드 생성기 등록
+// javascriptGenerator.forBlock['led_on'] = function (block) {
+//     return 'turnLedOn();\n';
+//   };
   
-  javascriptGenerator.forBlock['led_off'] = function (block) {
-    return 'turnLedOff();\n';
-  };
+//   javascriptGenerator.forBlock['led_off'] = function (block) {
+//     return 'turnLedOff();\n';
+//   };
 
-  javascriptGenerator.forBlock['delay'] = function (block) {
-    let value_name = javascriptGenerator.valueToCode(block, 'NAME', javascriptGenerator.ORDER_ATOMIC);
-    let code = `await delay(${value_name})`
-    return code + '\n';
-  };
+//   javascriptGenerator.forBlock['delay'] = function (block) {
+//     let value_name = javascriptGenerator.valueToCode(block, 'NAME', javascriptGenerator.ORDER_ATOMIC);
+//     let code = `await delay(${value_name})`
+//     return code + '\n';
+//   };
 
 
 
