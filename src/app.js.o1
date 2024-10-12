@@ -1,14 +1,13 @@
 const Blockly = require('blockly');  // Blockly 전체 모듈 가져오기
-require('./ublock/robo.js')
-
 // JavaScript 코드 생성기 로드 및 할당
 const { javascriptGenerator } = require('blockly/javascript');
+//Blockly.JavaScript = require('blockly/javascript');
 
-const { initBlockly } = require("./toolbox")
+const { cstoolbox } = require("./toolbox")
+//require('./ublock/robo.js')
 
-const {showAlert, changeIp, fx_blk_file_save,  
-    fx_blk_clear, fx_blk_file_read, } = require("./util")
-const {AddAiCarImage, disCamViewWindow} = require("./video")
+const {showAlert, changeIp} = require("./util")
+const {disCamViewWindow} = require("./video")
 
 const fs = require('fs')
 const path = require('path')
@@ -17,11 +16,20 @@ const os = require('os')
 
 require('./styles.css');
 require('./css_s/bootstrap.min.css');
-
 const { ipcRenderer } = require('electron');
+
 const BlocklyMsg = require('blockly/msg/ko'); // 한글 메시지를 가져옴
+
 const { delay, turnLedOn, turnLedOff } = require("./ublock/code")
 
+
+setTimeout(() => {
+    console.log("loading user Block")
+    require('./ublock/robo.js')
+    console.log('Blockly:', Blockly);
+    console.log('Blockly.JavaScript:', javascriptGenerator);
+    console.log('Workspace:', workspace);
+}, 500);
 
 
 // // 메시지 파일을 Blockly에 적용
@@ -32,11 +40,9 @@ const { delay, turnLedOn, turnLedOff } = require("./ublock/code")
 // 메시지 파일을 직접 적용
 // Object.assign(Blockly.Msg, BlocklyMsg);
 
-
-window.workspace;
-window.blocklyBox;
-window.blocklyArea
-
+let workspace;
+let blocklyBox;
+let blocklyArea
 let toolbox; // toolbox 변수를 추가
 let camViewButton;
 let genCode;
@@ -49,43 +55,83 @@ const lines = []; // 출력창에 표시될 텍스트를 저장할 배열
 // 로드 이벤트 리스너
 window.addEventListener('load', function () {
 
+    // if (!window.demoWorkspace && !isInitialized) {
+    //     console.log("load event ==================");
+    //     console.log("Initializing workspace...");
+    //     isInitialized = true;  // 초기화 플래그 설정
+    // }
+    // else {
+    //     return;
+    // }
 
     console.log("load event ==================");
     console.log("Initializing workspace...");
 
-    window.blocklyArea = document.getElementById('blocklyArea');
+    blocklyArea = document.getElementById('blocklyArea');
     console.log("blocklyArea    ", blocklyArea);
 
-    window.blocklyBox = document.getElementById('blocklyBox');
+    blocklyBox = document.getElementById('blocklyBox');
     console.log("blocklyBox    ", blocklyBox);
 
-   
-    initBlockly();
+
+    // toolbox XML을 가져옴
+    toolbox = document.getElementById('toolbox'); // toolbox 정의
+    console.log("toolbox: ", toolbox);
+
+
+    if (!workspace) {
+        console.log("Initializing workspace...");
+
+        workspace = Blockly.inject(blocklyBox, {
+            grid: {
+                spacing: 25,
+                length: 3,
+                colour: '#ccc',
+                snap: true
+            },
+            media: './media/',
+            toolbox: cstoolbox,
+
+            zoom: {
+                controls: true,
+                wheel: true
+            }
+        });
+
+        // 워크스페이스가 성공적으로 초기화되었는지 확인
+        if (workspace) {
+            console.log("Workspace initialized:", workspace);
+        }
+        else {
+            console.log("Workspace initialized: null", workspace);
+        }
+        window.workspace = workspace;
+    }
+
+    // 워크스페이스가 성공적으로 초기화되었는지 확인 후 리스너 등록
+    if (workspace) {
+        console.log('Workspace fully initialized');
+        workspace.addChangeListener(workspaceChangeListener);
+    } else {
+        console.error("demoWorkspace is not initialized yet.");
+    }
+
     onBloclkyBoxResize()
 
-    AddAiCarImage(); // 초기에 이미지를 삽입한다.
-
-    this.window.addEventListener('resize', onBloclkyBoxResize, true);
-
+    window.addEventListener('resize', onBloclkyBoxResize, true);
     camViewButton = document.getElementById('camViewButton');
     console.log("camViewButton    ", camViewButton);
     camViewButton.addEventListener('click', disCamViewWindow, false);
 
 
-    // document.getElementById('generateCodeButton').addEventListener('click', generateJavaCode);
-    // document.getElementById('runCodeButton').addEventListener('click', runJavaCode);
-    // document.getElementById('extCodeButton').addEventListener('click', extJavaCode);
-    // document.getElementById('codeOut').addEventListener('click', fxCodeOut);
+    document.getElementById('generateCodeButton').addEventListener('click', generateJavaCode);
+    document.getElementById('runCodeButton').addEventListener('click', runJavaCode);
+    document.getElementById('extCodeButton').addEventListener('click', extJavaCode);
+    document.getElementById('codeOut').addEventListener('click', fxCodeOut);
 
-    // document.getElementById('createFileButton').addEventListener('click', fxCreateFile);
-
-
+    document.getElementById('createFileButton').addEventListener('click', fxCreateFile);
     document.getElementById('ip_setting').addEventListener('click',changeIp);
 
-    document.getElementById('fblockSave').addEventListener('click',fx_blk_file_save);
-    document.getElementById('blockClear').addEventListener('click',fx_blk_clear);
-    document.getElementById('fblockRead').addEventListener('click',fx_blk_file_read);
-    
 
 });
 
@@ -94,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedIp = localStorage.getItem('savedIp') || '192.168.0.25';
     document.getElementById('ip_add_str').textContent = savedIp;
 });
+
 
 
 function fxCreateFile() {
@@ -125,6 +172,8 @@ function fxCreateFile() {
 
 
 function fxCodeOut() {
+
+
     const outputDiv = document.getElementById('code_out');
     const newText = "This is a newhjkhjhkkhhjhjjhjhhjhjhjjh line of text.";
 
@@ -198,12 +247,35 @@ function generateJavaCode() {
 }
 
 
+// 리사이즈 이벤트 핸들러
+// const onBloclkyBoxResize = function (e) {
+//     // Compute the absolute coordinates and dimensions of blocklyArea.
+//     console.log("onresize event");
+//     let element = blocklyArea;
+//     let x = 0;
+//     let y = 0;
+//     while (element) {
+//         x += element.offsetLeft;
+//         y += element.offsetTop;
+//         element = element.offsetParent;
+//     }
+
+//     console.log(`offsetWidth offsetHeight = ${x}, ${y}, ${blocklyArea.offsetWidth}, ${blocklyArea.offsetHeight} `);
+
+//     // Position blocklyDiv over blocklyArea.
+//     blocklyBox.style.left = x + 'px';
+//     blocklyBox.style.top = y + 'px';
+//     blocklyBox.style.width = blocklyArea.offsetWidth + 'px';
+//     blocklyBox.style.height = blocklyArea.offsetHeight + 'px';
+
+//     Blockly.svgResize(workspace);
+// };
 
 // 리사이즈 이벤트 핸들러
 const onBloclkyBoxResize = function (e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.
     console.log("onresize event");
-    let element = window.blocklyArea;
+    let element = blocklyArea;
     let x = 0;
     let y = 0;
     while (element) {
@@ -224,3 +296,14 @@ const onBloclkyBoxResize = function (e) {
 };
 
 
+
+
+
+// 워크스페이스 변경 리스너
+function workspaceChangeListener(event) {
+    console.log("Event Type: ", event.type);
+
+    if (event.type === Blockly.Events.CLICK) {
+        console.log("Block ID: ", event.blockId);
+    }
+}

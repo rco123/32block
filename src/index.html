@@ -9,9 +9,9 @@
 	<!-- Content Security Policy 설정: unsafe-eval을 허용 -->
 	<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';">
 
-
 	<title>iBlock</title>
 </head>
+
 
 <body>
 	<div id="customAlert">This is an alert</div>
@@ -22,7 +22,7 @@
 
 		<div class="d-grid gap-2 d-md-flex justify-content-md-end">
 
-			<button type="button" id="createFileButton" class="btn btn-primary btn-sm"
+			<!-- <button type="button" id="createFileButton" class="btn btn-primary btn-sm"
 				style="margin-top:30px; margin-right:20px;">CREATFILE</button>
 			<button type="button" id="codeOut" class="btn btn-primary btn-sm"
 				style="margin-top:30px; margin-right:20px;">TxT
@@ -32,7 +32,7 @@
 			<button type="button" id="runCodeButton" class="btn btn-primary btn-sm"
 				style="margin-top:30px; margin-right:20px;">Run Code</button>
 			<button type="button" id="extCodeButton" class="btn btn-primary btn-sm"
-				style="margin-top:30px; margin-right:20px;">EXT Code</button>
+				style="margin-top:30px; margin-right:20px;">EXT Code</button> -->
 
 			<button type="button" id="blockClear" class="btn btn-primary btn-sm"
 				style="margin-top:30px; margin-right:20px;">블록정리</button>
@@ -43,40 +43,44 @@
 			<button type="button" id="fblockRead" class="btn btn-success btn-sm"
 				style="margin-top:30px; margin-right:20px;">블록파일읽기</button>
 
-			<button type="button" id="camViewButton" class="btn btn-secondary btn-sm"
-				style="margin-top:30px; margin-right:20px;">영상보기</button>
-			<button type="button" id="blockRead" class="btn btn-success btn-sm"
-				style="margin-top:30px; margin-right:20px;">블록읽기</button>
-
 		</div>
 	</div>
+
 
 	<div id='blocklyArea'> </div>
 	<div id="blocklyBox" style="position: absolute;"></div>
 
 	<div id="con_view_area">
 		<div id="ip_box">
-			<p style="margin-top: 12px; margin-left: 10px; font-weight: 500; color: #9e9393;  display: inline-block; width: 60px;">IP  주소 :</p>
+			<p style="margin-top: 12px; margin-left: 10px; font-weight: 500; color: #9e9393;  display: inline-block">IP 주소 :</p>
 			<p id="ip_add_str"
-				style="margin-top: 12px; margin-left: 10px; font-weight: 500; color: #9e9393;  display: inline-block;">
-				192.168.0.25</p>
+				style="margin-top: 12px; margin-left: 10px; font-weight: 500; color: #9e9393;  display: inline-block;">192.168.0.25</p>
+
 			<button type="button" id="ip_setting" class="btn btn-warning btn-sm"
 				style="float: right; margin-top:10px; margin-right:10px;">IP 설정</button>
 
+			<button type="button" id="camViewButton" class="btn btn-secondary btn-sm"
+				style="float: right; margin-top:10px; margin-right:10px;">영상보기</button>	
 		</div>
+
 		<div id="cam_view_box"></div>
 		<div id="run_button_box">
 			<p style="margin-top: 12px; margin-left: 10px; font-weight: 500; color: #9e9393;  display: inline-block;">상태</p>
+			
+			<button type="button" id="code_out_clear" class="btn btn-primary btn-sm"
+				style="float: right; margin-top:10px; margin-right:10px; width: 60px;">청소</button>
 			<button type="button" id="code_kill" class="btn btn-warning btn-sm"
 				style="float: right; margin-top:10px; margin-right:10px; background-color: #c25c5c; color: #fff; width: 60px;">종료</button>	
 			<button type="button" id="code_run" class="btn btn-warning btn-sm"
 				style="float: right; margin-top:10px; margin-right:10px; background-color: #c25c5c; color: #fff; width: 60px;">실행</button>
 			
 		</div>
+
 		<div id="console_box">
 			<textarea id="code_out" readonly
 				style="height: 100%; width: 100%; font-size: small; font-family: Verdana, Geneva, Tahoma, sans-serif; border: none; "></textarea>
 		</div>
+
 
 	</div>
 

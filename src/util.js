@@ -1,3 +1,109 @@
+const Blockly = require('blockly');  // Blockly 전체 모듈 가져오기
+const fs = require('fs');
+const {saveAs} = require('file-saver')
+
+
+exports.fx_blk_file_read = () => {
+    // 파일 선택 input 생성
+    const el = document.createElement('input');
+    el.setAttribute('type', 'file');
+    el.setAttribute('accept', '.xml');  // 확장자를 .xml로 제한
+    el.style.display = 'none';
+    document.body.appendChild(el);
+
+    // 파일이 선택되었을 때 처리
+    el.onchange = () => {
+        const file = el.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const data = event.target.result;
+
+                try {
+                    // DOMParser를 사용하여 XML 파싱
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(data, "application/xml");
+
+                    // 파싱 에러 확인
+                    const parseError = xmlDoc.getElementsByTagName("parsererror");
+                    if (parseError.length > 0) {
+                        throw new Error('XML 파싱 오류: ' + parseError[0].textContent);
+                    }
+
+                    // Blockly workspace에 XML 로드
+                    const xmlElement = xmlDoc.documentElement;
+                    Blockly.Xml.domToWorkspace(xmlElement, window.workspace);
+                    console.log('XML이 성공적으로 workspace에 로드되었습니다.');
+                } catch (error) {
+                    console.error('XML 파싱 오류:', error);
+                } finally {
+                    // input element 제거
+                    document.body.removeChild(el);
+                }
+            };
+
+            // 파일을 텍스트로 읽기
+            reader.readAsText(file);
+        } else {
+            console.log('파일이 선택되지 않았습니다.');
+            document.body.removeChild(el);
+        }
+    };
+
+    // 파일 선택창 열기
+    el.click();
+};
+
+
+
+// 블록 초기화 함수
+exports.fx_blk_clear = () => {
+	console.log("clear workspace blocks")
+	window.workspace.clear();
+};
+
+
+// 파일로 블록 저장 함수
+exports.fx_blk_file_save = () => {
+    
+	
+	const xmlDom = Blockly.Xml.workspaceToDom(window.workspace);
+    const xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+    console.log('func_fblk_save()');
+
+    const blob = new Blob([xmlText], { type: "text/plain;charset=utf-8" });
+    saveAs(blob, "block.xml");
+};
+
+
+// 파일 선택 시 실행되는 함수
+window.handleFileSelect = (event) => {
+    const file = event.target.files[0];  // 선택된 파일 가져오기
+    if (!file) {
+        console.error("No file selected.");
+        return;
+    }
+
+    const reader = new FileReader();  // 파일 읽기 위한 FileReader 객체 생성
+
+    // 파일이 성공적으로 읽혀지면 호출되는 함수
+    reader.onload = function (e) {
+        const fileContent = e.target.result;
+        try {
+            const xml = Blockly.Xml.textToDom(fileContent);  // XML 텍스트를 Blockly XML DOM으로 변환
+            Blockly.Xml.domToWorkspace(xml, window.workspace);  // Blockly 워크스페이스에 로드
+            console.log("Workspace loaded from file.");
+        } catch (error) {
+            console.error("Error loading workspace from XML:", error);
+        }
+    };
+
+    // 파일을 텍스트 형식으로 읽기 시작
+    reader.readAsText(file);
+};
+
+
+
 
 exports.showAlert = (message, duration) => {
 	const alertBox = document.getElementById('customAlert');
@@ -20,6 +126,8 @@ exports.changeIp = () => {
 	// }
 
 }
+
+
 
 
 const ipModal = {

@@ -41,7 +41,6 @@ body {
 
 h1 {
     font-weight: normal;
-
     font-size: 140%;
 }
 
@@ -57,7 +56,6 @@ h1 {
 
 #blocklyArea {
     height: calc(100% - 100px);
-    /*width: 70%;*/
     width: var(--blocklyArea_width);
     float: left;
     border-style: solid;
@@ -65,15 +63,6 @@ h1 {
     border-width: 0px;
 }
 
-#divArea {
-    height: calc(100% - 100px);
-    width: 10px;
-    float: left;
-    border-style: solid;
-    border-color: blue;
-    border-width: 0px;
-    float: left;
-}
 
 #divLineBar_width {
     height: calc(100% - 100px);
@@ -87,8 +76,6 @@ h1 {
 }
 
 
-
-
 #con_view_area {
 
     height: calc(100% - 100px);
@@ -98,8 +85,6 @@ h1 {
     float: right;
 
     border-color: rgb(180, 177, 177);
-
-    /*border-color: rgb(202, 106, 106);*/
 
     border-width: 1px;
     border-style: solid;
@@ -191,7 +176,6 @@ h1 {
     font-weight: bold;
     font-size: 10pt;
 }
-
 
 
 #view_code_button,

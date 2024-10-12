@@ -3,6 +3,93 @@ let imageCounter = 0; // 순차적인 파일 이름을 위한 카운터
 let isCapturing = false; // 캡처 중복 방지를 위한 플래그
 let img;
 
+
+// <div id="cam_view_box" style="width: 300px; height: 200px; border: 1px solid #ccc;"></div>
+// <button onclick="addImage()">Add Image</button>
+// <button onclick="removeImage()">Remove Image</button>
+
+
+exports.AddAiCarImage = () => {
+    const camViewBox = document.getElementById('cam_view_box');
+
+    // 이미 canvas 태그가 존재하는지 확인
+    if (!camViewBox.querySelector('canvas')) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        // 캔버스의 너비와 높이를 설정
+        canvas.width = camViewBox.clientWidth;
+        canvas.height = camViewBox.clientHeight;
+
+        // Electron 환경에서는 __dirname을 사용하여 이미지 경로 설정
+        const path = require('path');
+        const imgPath = path.join(__dirname, './images/aicar.png');
+        const img = new Image();
+        img.src = `file://${imgPath}`;  // 절대 경로 사용
+
+        img.onload = () => {
+            // 이미지가 로드되면, 5px 여백을 적용하여 그리기
+            const offset = 5; // 5px의 여백
+            context.drawImage(
+                img,
+                offset,        // x 좌표: 왼쪽에서 5px
+                offset,        // y 좌표: 위쪽에서 5px
+                canvas.width - 2 * offset, // 너비: 캔버스 너비에서 양쪽 여백 5px씩 제외
+                canvas.height - 2 * offset // 높이: 캔버스 높이에서 위아래 여백 5px씩 제외
+            );
+        };
+
+        canvas.alt = 'Camera View';
+        camViewBox.appendChild(canvas);
+    }
+};
+
+
+
+exports.removeAiCarImage = () => {
+    const camViewBox = document.getElementById('cam_view_box');
+    
+    // cam_view_box 안에 있는 canvas 태그를 찾아 제거
+    const canvas = camViewBox.querySelector('canvas');
+    if (canvas) {
+        camViewBox.removeChild(canvas);
+    }
+};
+
+
+// exports.AddAiCarImage= ()=> {
+//     const camViewBox = document.getElementById('cam_view_box');
+
+//     // 이미 img 태그가 존재하는지 확인
+//     if (!camViewBox.querySelector('img')) {
+//         const img = document.createElement('img');
+
+//         // Electron 환경에서는 __dirname을 사용하여 경로 설정
+//         const path = require('path');
+//         img.src = path.join(__dirname, './images/aicar.png'); // 절대 경로 사용
+
+//         img.alt = 'Camera View';
+//         img.style.width = '90%';
+//         img.style.height = '90%';
+//         img.style.objectFit = 'cover';
+
+//         camViewBox.appendChild(img);
+//     }
+// }
+
+// function removeAiCarImage() {
+//     const camViewBox = document.getElementById('cam_view_box');
+    
+//     // cam_view_box 안에 있는 img 태그를 찾아 제거
+//     const img = camViewBox.querySelector('img');
+//     if (img) {
+//         camViewBox.removeChild(img);
+//     }
+// }
+
+
+
+
 exports.disCamViewWindow = ()=> {
     console.log("start show cam window display");
 
