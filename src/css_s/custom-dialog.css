@@ -1,0 +1,98 @@
+/* 다이얼로그 배경 오버레이 */
+.custom-dialog-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 어두운 반투명 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  /* 다이얼로그 본체 */
+  .custom-dialog-container {
+    background-color: #f7ede7;
+    width: 300px;
+    height: 220px;
+    max-width: 90%; /* 작은 화면에서도 다이얼로그가 보이도록 */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+
+    /* 화면의 오른쪽 아래로 이동 (예시로 margin-left와 margin-top 사용) */
+    margin-left: 100px; /* 왼쪽에서 100px 떨어짐 */
+    margin-top: 100px;   /* 위에서 50px 떨어짐 */
+  }
+  
+  /* 다이얼로그 타이틀 */
+  .custom-dialog-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  /* 다이얼로그 메시지 */
+  .custom-dialog-message {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #555;
+  }
+  
+  /* 입력 필드 */
+  .custom-dialog-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+  /* 버튼 컨테이너 */
+  .custom-dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  /* 기본 버튼 스타일 */
+  .custom-dialog-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+  }
+  
+  /* 확인 버튼 */
+  .custom-dialog-ok {
+    background-color: #4CAF50;
+    color: white;
+  }
+  .custom-dialog-ok:hover {
+    background-color: #45a049;
+  }
+  
+  /* 취소 버튼 */
+  .custom-dialog-cancel {
+    background-color: #f44336;
+    color: white;
+  }
+  .custom-dialog-cancel:hover {
+    background-color: #e53935;
+  }
+  
+  /* 다이얼로그 애니메이션 */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
