@@ -8,8 +8,12 @@ let img;
 // <button onclick="addImage()">Add Image</button>
 // <button onclick="removeImage()">Remove Image</button>
 
-
 exports.AddAiCarImage = () => {
+    AddAiCarImage()
+}
+
+AddAiCarImage = () => {
+
     const camViewBox = document.getElementById('cam_view_box');
 
     // 이미 canvas 태그가 존재하는지 확인
@@ -20,6 +24,7 @@ exports.AddAiCarImage = () => {
         // 캔버스의 너비와 높이를 설정
         canvas.width = camViewBox.clientWidth;
         canvas.height = camViewBox.clientHeight;
+        canvas.id = "aicarpng"
 
         // Electron 환경에서는 __dirname을 사용하여 이미지 경로 설정
         const path = require('path');
@@ -45,96 +50,71 @@ exports.AddAiCarImage = () => {
 };
 
 
-
-exports.removeAiCarImage = () => {
+removeAiCarImage = () => {
     const camViewBox = document.getElementById('cam_view_box');
     
-    // cam_view_box 안에 있는 canvas 태그를 찾아 제거
-    const canvas = camViewBox.querySelector('canvas');
-    if (canvas) {
+    // 특정 id를 가진 canvas 태그를 찾아 제거
+    const canvas = document.getElementById('aicarpng');
+    if (canvas && camViewBox.contains(canvas)) {
         camViewBox.removeChild(canvas);
+        console.log('Canvas with id "aicarpng" has been removed.');
+    } else {
+        console.log('No canvas with id "aicarpng" found.');
     }
 };
 
 
-// exports.AddAiCarImage= ()=> {
-//     const camViewBox = document.getElementById('cam_view_box');
 
-//     // 이미 img 태그가 존재하는지 확인
-//     if (!camViewBox.querySelector('img')) {
-//         const img = document.createElement('img');
-
-//         // Electron 환경에서는 __dirname을 사용하여 경로 설정
-//         const path = require('path');
-//         img.src = path.join(__dirname, './images/aicar.png'); // 절대 경로 사용
-
-//         img.alt = 'Camera View';
-//         img.style.width = '90%';
-//         img.style.height = '90%';
-//         img.style.objectFit = 'cover';
-
-//         camViewBox.appendChild(img);
-//     }
-// }
-
-// function removeAiCarImage() {
-//     const camViewBox = document.getElementById('cam_view_box');
-    
-//     // cam_view_box 안에 있는 img 태그를 찾아 제거
-//     const img = camViewBox.querySelector('img');
-//     if (img) {
-//         camViewBox.removeChild(img);
-//     }
-// }
-
-
-
-
-exports.disCamViewWindow = ()=> {
+exports.disCamViewWindow = () => {
     console.log("start show cam window display");
 
-    var blocklyBox = document.getElementById('blocklyBox');
+    var camViewBox = document.getElementById('cam_view_box');
+
+    removeAiCarImage();
 
     // 기존에 생성된 영상 창이 있으면 제거 (자원 청소)
-    var existingCamDiv = document.getElementById('camWindowDiv');
+    var existingCamDiv = document.getElementById('camWindowRun');
     if (existingCamDiv) {
         console.log("Removing existing camera stream window");
 
-        if(img && img.src)
-        {
-            img.src ='';
+        if (img && img.src) {
+            img.src = '';
             img.onload = null;
             console.log("Image source cleared and onload event removed.");
         }
-        
         existingCamDiv.remove();
         isCapturing = false; // 캡처 중단
-        
         console.log("Camera stream stopped and resources cleaned up.");
+
+        AddAiCarImage();
+
         return;  // 기존 영상 창을 삭제한 후 함수 종료
     }
 
     // 새로운 div 요소 생성
     var newDiv = document.createElement('div');
-    newDiv.id = 'camWindowDiv';
-    newDiv.style.position = 'absolute';
-    newDiv.style.top = '50px';
-    newDiv.style.left = '50px';
-    newDiv.style.width = '320px';
-    newDiv.style.height = '240px';
-    newDiv.style.border = '2px solid black';
-    newDiv.style.zIndex = '100';
+    newDiv.id = 'camWindowRun';
+    newDiv.style.position = 'relative';
+    newDiv.style.width = '100%';
+    newDiv.style.height = '100%';
 
-    // blocklyBox에 추가 (Blockly 상단에 배치)
-    blocklyBox.appendChild(newDiv);
+    // camViewBox에 추가 (camViewBox 내부에 배치)
+    camViewBox.appendChild(newDiv);
+
+    // camViewBox 크기를 기준으로 canvas 크기를 동적으로 설정
+    const boxWidth = camViewBox.clientWidth;
+    const boxHeight = camViewBox.clientHeight;
 
     // Canvas 요소 생성
     var canvas = document.createElement('canvas');
     canvas.id = 'camCanvas';
-    canvas.width = 320;  // 캔버스의 너비 설정
-    canvas.height = 240;  // 캔버스의 높이 설정
+    canvas.width = boxWidth;  // 캔버스의 너비를 camViewBox에 맞추기
+    canvas.height = boxHeight;  // 캔버스의 높이를 camViewBox에 맞추기
     canvas.style.width = '100%';
     canvas.style.height = '100%';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
 
     // 생성한 canvas 태그를 newDiv에 추가
     newDiv.appendChild(canvas);
@@ -148,15 +128,13 @@ exports.disCamViewWindow = ()=> {
     const context = canvas.getContext('2d');
     isCapturing = true;
 
-
     // 이미지가 로드될 때마다 캔버스에 그리기
     img.onload = () => {
         if (isCapturing) {
+            context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스를 지우고 새로 그리기
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
-            captureAndSaveImage(canvas); // 이미지 캡처 및 저장
 
             // 새로운 이미지를 가져오기 위해 src를 재설정
-            //img.src = 'http://192.168.0.25:82/alt_stream' + '?t=' + new Date().getTime();
             img.src = 'http://192.168.0.25:82/alt_stream';
         }
     };
@@ -166,7 +144,8 @@ exports.disCamViewWindow = ()=> {
     };
 
     console.log("Camera stream started and canvas set.");
-}
+};
+
 
 const captureAndSaveImage = (canvas)=> {
     // Canvas의 데이터를 Blob 형태로 변환 (JPG 형식)

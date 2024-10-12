@@ -76,34 +76,6 @@ exports.fx_blk_file_save = () => {
 };
 
 
-// 파일 선택 시 실행되는 함수
-window.handleFileSelect = (event) => {
-    const file = event.target.files[0];  // 선택된 파일 가져오기
-    if (!file) {
-        console.error("No file selected.");
-        return;
-    }
-
-    const reader = new FileReader();  // 파일 읽기 위한 FileReader 객체 생성
-
-    // 파일이 성공적으로 읽혀지면 호출되는 함수
-    reader.onload = function (e) {
-        const fileContent = e.target.result;
-        try {
-            const xml = Blockly.Xml.textToDom(fileContent);  // XML 텍스트를 Blockly XML DOM으로 변환
-            Blockly.Xml.domToWorkspace(xml, window.workspace);  // Blockly 워크스페이스에 로드
-            console.log("Workspace loaded from file.");
-        } catch (error) {
-            console.error("Error loading workspace from XML:", error);
-        }
-    };
-
-    // 파일을 텍스트 형식으로 읽기 시작
-    reader.readAsText(file);
-};
-
-
-
 
 exports.showAlert = (message, duration) => {
 	const alertBox = document.getElementById('customAlert');
@@ -126,7 +98,6 @@ exports.changeIp = () => {
 	// }
 
 }
-
 
 
 
