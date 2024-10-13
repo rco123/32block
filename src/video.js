@@ -92,7 +92,6 @@ exports.disCamViewWindow = (save_dir_name) => {
     const boxHeight = camViewBox.clientHeight;
     console.log("camviewBox ", boxWidth, boxHeight)
 
-
     // Canvas 요소 생성
     var canvas = document.createElement('canvas');
     canvas.id = 'camCanvas';
@@ -107,7 +106,6 @@ exports.disCamViewWindow = (save_dir_name) => {
     // 생성한 canvas 태그를 camViewBox에 직접 추가
     camViewBox.appendChild(canvas);
 
-
     const ipAddress = document.getElementById('ip_add_str').textContent;
     console.log("IP Address: ", ipAddress);
     
@@ -119,7 +117,7 @@ exports.disCamViewWindow = (save_dir_name) => {
 
     const context = canvas.getContext('2d');
     
-    isCapturing = false;
+    window.isCapturing = false;
 
     // 이미지가 로드될 때마다 캔버스에 그리기
     img.onload = () => {
@@ -127,8 +125,7 @@ exports.disCamViewWindow = (save_dir_name) => {
         context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스를 지우고 새로 그리기
         context.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        if (isCapturing) {
-            
+        if (window.isCapturing) {
 
             // Image DATA 추출
             // 1. 임시 캔버스 생성
@@ -159,6 +156,7 @@ exports.disCamViewWindow = (save_dir_name) => {
         console.error('Error loading MJPEG stream:', error);
     };
     console.log("Camera stream started and canvas set.");
+
 };
 
 

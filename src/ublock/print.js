@@ -43,8 +43,8 @@ Blockly.Blocks['text_print_a'] = {
 };
 javascriptGenerator.forBlock['text_print'] = function (block) {
     var msg = javascriptGenerator.valueToCode(block, 'TEXT', javascriptGenerator.ORDER_NONE);
-    return 'print_a(' + msg + ');\n';
+    return 'print(' + msg + ');\n';
 };
-exports.print_a = (str) => {
+exports.print = (str) => {
     fxCodeOut(str)
 }

@@ -3,8 +3,7 @@ const { javascriptGenerator } = require('blockly/javascript');
 const { robo_delay, robo_beep, robo_move, robo_stop } = require("./ublock/robo")
 const {robo_cam_run} = require("./ublock/cam")
 const {robo_set_speed, robo_dir_clean,robo_hp_con} = require("./ublock/data")
-const {print_a} = require("./ublock/print")
-
+const {print} = require("./ublock/print")
 
 
 // Blockly JavaScript 생성기 사용
@@ -36,7 +35,7 @@ exports.runJavaCode=()=> {
     try {
         window.runStop = 1; // 실행을 시작하는 플래그
         eval(eval_code); // 생성된 코드를 실행
-        print_a("End Program..")
+        print("End Program..")
     } catch (error) {
         console.error('Error executing generated code:', error);
     }

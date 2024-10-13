@@ -11,6 +11,7 @@ require('./ublock/data.js')
 require('./ublock/loop.js')
 require('./ublock/print.js')
 
+window.print=''; // 프린트가 대신 동작하는것을 방지
 
 // JavaScript 코드 생성기 로드 및 할당
 const { javascriptGenerator } = require('blockly/javascript');
