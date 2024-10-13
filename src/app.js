@@ -8,6 +8,8 @@ require('./ublock/robo.js')
 require('./ublock/cam.js')
 require('./ublock/det.js')
 require('./ublock/data.js')
+require('./ublock/loop.js')
+
 
 
 
@@ -31,8 +33,8 @@ require('./css_s/bootstrap.min.css');
 
 const { ipcRenderer } = require('electron');
 const BlocklyMsg = require('blockly/msg/ko'); // 한글 메시지를 가져옴
-const { delay, turnLedOn, turnLedOff } = require("./ublock/blkCode.js")
-const {generateJavaCode} = require("./runCode")
+//const { robo_delay, robo_beep } = require("./ublock/robo.js")
+const {runJavaCode, extJavaCode} = require("./runCode")
 
 
 
@@ -48,11 +50,12 @@ const {generateJavaCode} = require("./runCode")
 window.workspace;
 window.blocklyBox;
 window.blocklyArea
+window.runStop = true // 코드를 실행중지 제어
+
 
 let toolbox; // toolbox 변수를 추가
 let camViewButton;
 let genCode;
-let runStop = true
 
 const maxLines = 50; // 최대 줄 수 설정
 const lines = []; // 출력창에 표시될 텍스트를 저장할 배열
@@ -74,8 +77,11 @@ window.addEventListener('load', function () {
    
     initBlockly();
     onBloclkyBoxResize()
-
     AddAiCarImage(); // 초기에 이미지를 삽입한다.
+    
+    loadWorkspace(); // 바탕화면 불러오기
+
+
 
     this.window.addEventListener('resize', onBloclkyBoxResize, true);
 
@@ -89,24 +95,102 @@ window.addEventListener('load', function () {
     // document.getElementById('extCodeButton').addEventListener('click', extJavaCode);
     // document.getElementById('codeOut').addEventListener('click', fxCodeOut);
 
-    // document.getElementById('createFileButton').addEventListener('click', fxCreateFile);
-
-    document.getElementById('gencode').addEventListener('click',generateJavaCode);
-
-
+    document.getElementById('save_workspace').addEventListener('click', saveWorkspace);
+    
+    document.getElementById('code_run').addEventListener('click',runJavaCode);
+    document.getElementById('code_kill').addEventListener('click',extJavaCode);
+    document.getElementById('code_clear').addEventListener('click',clear_code_out);
+    
     document.getElementById('ip_setting').addEventListener('click',changeIp);
 
     document.getElementById('fblockSave').addEventListener('click',fx_blk_file_save);
     document.getElementById('blockClear').addEventListener('click',fx_blk_clear);
     document.getElementById('fblockRead').addEventListener('click',fx_blk_file_read);
-});
 
+   
+
+});
 
 // 페이지 로드 시 저장된 IP 불러오기
 document.addEventListener('DOMContentLoaded', () => {
     const savedIp = localStorage.getItem('savedIp') || '192.168.0.25';
     document.getElementById('ip_add_str').textContent = savedIp;
+
 });
+
+
+function clear_code_out(){
+    document.getElementById('code_out').value = ''; // textarea의 내용을 빈 문자열로 설정
+}
+
+function saveWorkspace() {
+    // 워크스페이스를 XML 형식으로 변환
+    const xml = Blockly.Xml.workspaceToDom(window.workspace);
+
+    // XML을 문자열로 변환 (저장하기 위한 문자열 데이터)
+    const xmlText = Blockly.Xml.domToText(xml);
+
+    // 로컬 스토리지에 저장
+    localStorage.setItem('workspaceBlocks', xmlText);
+    console.log("Workspace saved.");
+}
+
+
+function loadWorkspace() {
+    // 로컬 스토리지에서 저장된 XML 데이터를 가져옴
+    const xmlText = localStorage.getItem('workspaceBlocks');
+
+    if (xmlText) {
+        try {
+            // DOMParser를 사용하여 XML 문자열을 DOM 객체로 변환
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+
+            // 파싱 에러 확인
+            const parseError = xmlDoc.getElementsByTagName("parsererror");
+            if (parseError.length > 0) {
+                throw new Error('XML 파싱 오류: ' + parseError[0].textContent);
+            }
+
+            // 파싱된 XML에서 최상위 요소 확인
+            const xmlElement = xmlDoc.documentElement;
+            if (!xmlElement || xmlElement.nodeName !== 'xml') {
+                throw new Error('올바르지 않은 XML 데이터입니다.');
+            }
+
+            // 워크스페이스 초기화
+            window.workspace.clear();
+
+            // XML 데이터를 워크스페이스에 로드
+            Blockly.Xml.domToWorkspace(xmlElement, window.workspace);
+
+            console.log("Workspace loaded.");
+        } catch (e) {
+            console.error("Error loading workspace: ", e);
+        }
+    } else {
+        console.log("No workspace data found.");
+    }
+}
+
+
+
+
+
+// function loadWorkspace() {
+//     // 로컬 스토리지 또는 데이터베이스에서 저장된 XML 데이터를 가져옴
+//     const xmlText = localStorage.getItem('workspaceBlocks');
+
+//     if (xmlText) {
+//         // XML 문자열을 DOM 객체로 변환
+//         const xml = Blockly.utils.xml.textToDom(xmlText);
+//         // 워크스페이스에 XML 데이터를 적용하여 블록 복원
+//         Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, window.workspace);
+//         console.log("Workspace loaded.");
+//     } else {
+//         console.log("No workspace data found.");
+//     }
+// }
 
 
 function fxCreateFile() {
@@ -137,9 +221,9 @@ function fxCreateFile() {
 }
 
 
-function fxCodeOut() {
+function fxCodeOut(str) {
     const outputDiv = document.getElementById('code_out');
-    const newText = "This is a newhjkhjhkkhhjhjjhjhhjhjhjjh line of text.";
+    const newText = str;
 
     // 배열에 새로운 줄 추가
     lines.push(newText);
@@ -148,13 +232,11 @@ function fxCodeOut() {
     if (lines.length > maxLines) {
         lines.shift(); // 가장 오래된 줄 삭제
     }
-
     // 배열을 문자열로 합쳐 출력창에 표시
     outputDiv.textContent = lines.join('\n');
 
     // 출력창의 스크롤을 항상 맨 아래로 유지
     outputDiv.scrollTop = outputDiv.scrollHeight;
-
 }
 
 

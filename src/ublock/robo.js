@@ -12,6 +12,42 @@ const colorVal= 100
 // 		<block type="robo_beep"></block>
 // 	</category>  
 
+  
+exports.sendJsonCommand=(jsoncmd)=> {
+    sendJsonCommand(jsoncmd);
+}
+function sendJsonCommand(jsoncmd) {
+
+    const ipAddress = document.getElementById('ip_add_str').textContent;
+     // IP 주소가 올바르게 입력되었는지 확인
+    console.log("IP Address: ", ipAddress);
+    
+    // WebSocket 연결 설정 (예시)
+    const socket = new WebSocket(`ws://${ipAddress}:92/alt_ws`);
+
+    // 2. WebSocket 연결이 성공했을 때 실행될 코드
+    socket.addEventListener('open', function () {
+      console.log('Connected to WebSocket server');
+
+      // 3. JSON 명령어 전송
+      socket.send(JSON.stringify(jsoncmd));
+      console.log('JSON command sent:', jsoncmd);
+      // 4. JSON 명령어 전송 후 WebSocket 연결을 종료
+      socket.close();
+      console.log('WebSocket connection closed after sending command');
+    });
+
+    // 5. 서버로부터 메시지를 받았을 때
+    socket.addEventListener('message', function (event) {
+      console.log('Message from server:', event.data);
+    });
+
+    // 6. WebSocket 연결이 닫혔을 때
+    socket.addEventListener('close', function () {
+      console.log('WebSocket connection closed');
+    });
+  } 
+
 
 //<<
 Blockly.Blocks['robo_move'] = {
@@ -44,51 +80,39 @@ javascriptGenerator.forBlock['robo_move'] = function (block) {
 	var code = strout + '\n';
 	return code;
 };
-//>>
-
-// IP 주소 유효성 검사 함수 (간단한 버전)
-function validateIPAddress(ip) {
-    const regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    return regex.test(ip);
-  }
-
-function sendJsonCommand(jsoncmd) {
-
-    const ipAddress = document.getElementById('ip_add_str').value;
-     // IP 주소가 올바르게 입력되었는지 확인
-    console.log("IP Address: ", ipAddress);
-    
-    // WebSocket 연결 설정 (예시)
-    const socket = new WebSocket(`ws://${ipAddress}:92/alt_ws`);
-
-    // 2. WebSocket 연결이 성공했을 때 실행될 코드
-    socket.addEventListener('open', function () {
-      console.log('Connected to WebSocket server');
-
-      // 3. JSON 명령어 전송
-      socket.send(JSON.stringify(jsoncmd));
-      console.log('JSON command sent:', jsoncmd);
-      // 4. JSON 명령어 전송 후 WebSocket 연결을 종료
-      socket.close();
-      console.log('WebSocket connection closed after sending command');
-    });
-
-    // 5. 서버로부터 메시지를 받았을 때
-    socket.addEventListener('message', function (event) {
-      console.log('Message from server:', event.data);
-    });
-
-    // 6. WebSocket 연결이 닫혔을 때
-    socket.addEventListener('close', function () {
-      console.log('WebSocket connection closed');
-    });
-  } 
-
 exports.robo_move = function(angle, speed)
 {
     const jsoncmd = { cmd: "move", angle: angle, speed: speed  }
     sendJsonCommand(jsoncmd);
 }
+//>>
+
+//<<
+Blockly.Blocks['robo_stop'] = {
+	init: function () {
+		this.appendDummyInput()
+			.appendField("robo.stop( )");
+		this.setInputsInline(true);
+		this.setPreviousStatement(true, null);
+		this.setNextStatement(true, null);
+		this.setColour(colorVal);
+		this.setTooltip("");
+		this.setHelpUrl("");
+	}
+};
+javascriptGenerator.forBlock['robo_stop'] = function (block) {
+	// TODO: Assemble Python into code variable.
+	let strout = 'robo_stop()'
+	var code = strout + '\n';
+	return code;
+};
+exports.robo_stop = function(angle, speed)
+{
+    const jsoncmd = { "cmd": "move", "angle": 0, "speed": 0  }
+    sendJsonCommand(jsoncmd);
+}
+//>>
+
 
 
 //<<
@@ -110,12 +134,12 @@ Blockly.Blocks['robo_delay'] = {
 };
 javascriptGenerator.forBlock['robo_delay'] = function (block) {
 	let value_name = javascriptGenerator.valueToCode(block, 'NAME', javascriptGenerator.ORDER_ATOMIC);
-	let code = `await delay(${value_name})`
+	let code = `await robo_delay(${value_name})`
 	return code + '\n';
 };
 //>>
 // timewait 함수를 작성하여 지연을 Promise로 처리
-exports.delay = async (ms)=> {
+exports.robo_delay = async (ms)=> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -145,31 +169,9 @@ javascriptGenerator.forBlock['robo_get_img'] = function (block) {
 };
 //>>
 
-exports.robo_get_img = async () => {
-    return new Promise((resolve, reject) => {
-      // 이벤트를 대기하고 이미지를 처리
-      const handleImageEvent = (event) => {
-        const img = event.detail.img; // 이벤트로부터 이미지 데이터를 가져옴
-        console.log('Image received via event:', img);
-        
-        // 이미지가 준비되었으므로 Promise를 해결
-        resolve(img);
-        
-        // 더 이상 이벤트를 듣지 않도록 리스너 제거
-        window.removeEventListener('imageReady', handleImageEvent);
-      };
-  
-      // 'imageReady' 이벤트를 대기
-      window.addEventListener('imageReady', handleImageEvent);
-  
-      // 여기서 이미지 요청을 보낼 수 있습니다.
-      // 예를 들어, 이미지를 서버에서 받아오는 코드 등...
-    });
-  };
 
 
-
-//<<
+//<< 
 Blockly.Blocks['robo_led_left'] = {
 	init: function () {
 		this.appendDummyInput()
@@ -235,32 +237,6 @@ exports.robo_led_right = ()=>
 }
 
 
-//<<
-Blockly.Blocks['robo_stop'] = {
-	init: function () {
-		this.appendDummyInput()
-			.appendField("robo.stop( )");
-		this.setInputsInline(true);
-		this.setPreviousStatement(true, null);
-		this.setNextStatement(true, null);
-		this.setColour(colorVal);
-		this.setTooltip("");
-		this.setHelpUrl("");
-	}
-};
-javascriptGenerator.forBlock['robo_stop'] = function (block) {
-	// TODO: Assemble Python into code variable.
-	let strout = 'robo_stop()'
-	var code = strout + '\n';
-	return code;
-};
-//>>
-exports.robo_move = function(angle, speed)
-{
-    const jsoncmd = { "cmd": "move", "angle": 0, "speed": 0  }
-    sendJsonCommand(jsoncmd);
-}
-
 
 //<<
 Blockly.Blocks['robo_beep'] = {
@@ -285,8 +261,11 @@ javascriptGenerator.forBlock['robo_beep'] = function (block) {
 
 exports.robo_beep = function()
 {
-    const jsoncmd = { "cmd": "beep" }
-    sendJsonCommand(jsoncmd);
+    // const jsoncmd = { "cmd": "beep" }
+    // sendJsonCommand(jsoncmd);
+
+    console.log("run Beep")
+
 }
 
 

@@ -1,5 +1,6 @@
 const Blockly = require('blockly');
 const { javascriptGenerator } = require('blockly/javascript');
+const {sendJsonCommand} = require("./robo")
 
 const colorVal = 200;
 
@@ -14,9 +15,9 @@ const colorVal = 200;
 Blockly.Blocks['robo_set_speed'] = {
 	init: function () {
 		this.appendDummyInput()
-			.appendField("robo_set_speed(");
+			.appendField("robo_set_speed(speed: 0 ~ 255 ");
 		this.appendValueInput("NAME")
-			.setCheck("Number");
+			.setCheck("Number")
 		this.appendDummyInput()
 			.appendField(")");
 		this.setInputsInline(true);
@@ -35,7 +36,10 @@ javascriptGenerator.forBlock['robo_set_speed'] = function (block) {
 
 //>>
 exports.robo_set_speed = (ms)=> {
-    const jsoncmd = { "cmd": "set_speed", "speed": speed  }
+
+    if(ms < 0 ) ms = 0;
+    if(ms > 255) ms = 255;
+    const jsoncmd = { "cmd": "set_speed", "speed": ms  }
     sendJsonCommand(jsoncmd);
 }
     
