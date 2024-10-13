@@ -9,8 +9,7 @@ require('./ublock/cam.js')
 require('./ublock/det.js')
 require('./ublock/data.js')
 require('./ublock/loop.js')
-
-
+require('./ublock/print.js')
 
 
 // JavaScript 코드 생성기 로드 및 할당
@@ -51,6 +50,7 @@ window.workspace;
 window.blocklyBox;
 window.blocklyArea
 window.runStop = true // 코드를 실행중지 제어
+window.isCapturing = false; // 영상수집결정
 
 
 let toolbox; // toolbox 변수를 추가
@@ -219,28 +219,6 @@ function fxCreateFile() {
         }
     });
 }
-
-
-function fxCodeOut(str) {
-    const outputDiv = document.getElementById('code_out');
-    const newText = str;
-
-    // 배열에 새로운 줄 추가
-    lines.push(newText);
-
-    // 최대 줄 수를 초과하면 가장 오래된 줄 삭제
-    if (lines.length > maxLines) {
-        lines.shift(); // 가장 오래된 줄 삭제
-    }
-    // 배열을 문자열로 합쳐 출력창에 표시
-    outputDiv.textContent = lines.join('\n');
-
-    // 출력창의 스크롤을 항상 맨 아래로 유지
-    outputDiv.scrollTop = outputDiv.scrollHeight;
-}
-
-
-
 
 
 // 워크스페이스 변경 리스너

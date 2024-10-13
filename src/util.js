@@ -100,7 +100,6 @@ exports.changeIp = () => {
 }
 
 
-
 const ipModal = {
 	modalElement: null,
 
@@ -172,10 +171,6 @@ const ipModal = {
 		}
 	}
 };
-
-
-
-
 
 // 버튼을 클릭하면 모달 열기
 function openModal() {

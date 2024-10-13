@@ -64,71 +64,75 @@ removeAiCarImage = () => {
 };
 
 
-exports.disCamViewWindow = (save_dir_name) => {
+
+exports.disCamViewWindow = () => {
     console.log("start show cam window display");
-    let camViewBox = document.getElementById('cam_view_box');
+
+    var camViewBox = document.getElementById('cam_view_box');
 
     removeAiCarImage();
 
     // 기존에 생성된 영상 창이 있으면 제거 (자원 청소)
-    var existingCanvas = document.getElementById('camCanvas');
-    if (existingCanvas) {
-        console.log("Removing existing camera stream canvas");
+    var existingCamDiv = document.getElementById('camWindowRun');
+    if (existingCamDiv) {
+        console.log("Removing existing camera stream window");
 
         if (img && img.src) {
             img.src = '';
             img.onload = null;
             console.log("Image source cleared and onload event removed.");
         }
-        existingCanvas.remove();
+        existingCamDiv.remove();
         isCapturing = false; // 캡처 중단
         console.log("Camera stream stopped and resources cleaned up.");
+
         AddAiCarImage();
-        return;  // 기존 캔버스를 삭제한 후 함수 종료
+
+        return;  // 기존 영상 창을 삭제한 후 함수 종료
     }
+
+    // 새로운 div 요소 생성
+    var newDiv = document.createElement('div');
+    newDiv.id = 'camWindowRun';
+    newDiv.style.position = 'relative';
+    newDiv.style.width = '100%';
+    newDiv.style.height = '100%';
+
+    // camViewBox에 추가 (camViewBox 내부에 배치)
+    camViewBox.appendChild(newDiv);
 
     // camViewBox 크기를 기준으로 canvas 크기를 동적으로 설정
     const boxWidth = camViewBox.clientWidth;
     const boxHeight = camViewBox.clientHeight;
-    console.log("camviewBox ", boxWidth, boxHeight)
-
 
     // Canvas 요소 생성
     var canvas = document.createElement('canvas');
     canvas.id = 'camCanvas';
-    canvas.width = boxWidth -10 ;  // 캔버스의 너비를 camViewBox에 맞추기
-    canvas.height = boxHeight -10 ;  // 캔버스의 높이를 camViewBox에 맞추기
-    canvas.style.width = 'calc(100% - 10px)';
-    canvas.style.height = 'calc(100% - 10px)';
-    canvas.style.position = 'relative';
-    canvas.style.top = '5px';
-    canvas.style.left = '5px';
+    canvas.width = boxWidth;  // 캔버스의 너비를 camViewBox에 맞추기
+    canvas.height = boxHeight;  // 캔버스의 높이를 camViewBox에 맞추기
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
 
-    // 생성한 canvas 태그를 camViewBox에 직접 추가
-    camViewBox.appendChild(canvas);
+    // 생성한 canvas 태그를 newDiv에 추가
+    newDiv.appendChild(canvas);
 
-
-    const ipAddress = document.getElementById('ip_add_str').textContent;
-    console.log("IP Address: ", ipAddress);
-    
     // MJPEG 스트림을 받아올 <img> 태그 생성
     img = document.createElement('img');
-    img.src = `http://${ipAddress}:82/alt_stream`; // ESP32-CAM의 MJPEG 스트림 URL
+    img.src = 'http://192.168.0.25:82/alt_stream'; // ESP32-CAM의 MJPEG 스트림 URL
     img.style.display = 'none'; // <img> 요소를 화면에 표시하지 않음
     document.body.appendChild(img);
 
     const context = canvas.getContext('2d');
-    
-    isCapturing = false;
+    isCapturing = true;
 
     // 이미지가 로드될 때마다 캔버스에 그리기
     img.onload = () => {
-
-        context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스를 지우고 새로 그리기
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
         if (isCapturing) {
-            
+            context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스를 지우고 새로 그리기
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             // Image DATA 추출
             // 1. 임시 캔버스 생성
@@ -141,18 +145,22 @@ exports.disCamViewWindow = (save_dir_name) => {
             tempContext.drawImage(img, 0, 0, img.width, img.height);
             // 4. getImageData로 픽셀 데이터 추출
             const imageData = tempContext.getImageData(0, 0, img.width, img.height);
-            //console.log('ImageData:', imageData);
+            console.log('ImageData:', imageData);
             // 7. 임시로 생성한 캔버스를 삭제
             tempCanvas.remove();
+
 
             const imageEvent = new CustomEvent('imageReady', {
                 detail: { img: imageData }
             });
+            
             // 이벤트 디스패치 (발생시킴)
             window.dispatchEvent(imageEvent);
+
+            // 새로운 이미지를 가져오기 위해 src를 재설정
+            img.src = 'http://192.168.0.25:82/alt_stream';
+
         }
-        // 새로운 이미지를 가져오기 위해 src를 재설정
-        img.src = `http://${ipAddress}:82/alt_stream`;
     };
 
     img.onerror = (error) => {
@@ -160,6 +168,7 @@ exports.disCamViewWindow = (save_dir_name) => {
     };
     console.log("Camera stream started and canvas set.");
 };
+
 
 
 

@@ -16,6 +16,7 @@
     "blockly": "^11.0.0",
     "electron": "^32.1.2",
     "file-saver": "^2.0.5",
+    "fs-extra": "^11.2.0",
     "sweetalert2": "^11.14.2"
   },
   "devDependencies": {
