@@ -43,13 +43,22 @@ module.exports = {
       {
         test: /\.html$/,  // HTML 파일 처리
         use: ['html-loader'],  // html-loader 추가
+        // use: [
+        //   {
+        //     loader: 'raw-loader',
+        //     options: {
+        //       esModule: false,  // CommonJS 방식으로 로드하도록 설정
+        //     },
+        //   },
+          
+        // ],
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',  // 기본 HTML 파일
-     
+      filename: 'test.html',
     }),
     new CopyWebpackPlugin({
       patterns: [

@@ -38,6 +38,8 @@ const {runJavaCode, extJavaCode} = require("./runCode")
 const {fxCodeOutClean} = require("./ublock/print")
 
 
+const overlayContent = require('./test.html');
+
 // // 메시지 파일을 Blockly에 적용
 // Blockly.setLocale = function (locale) {
 //     Object.assign(Blockly.Msg, locale);
@@ -64,8 +66,7 @@ const lines = []; // 출력창에 표시될 텍스트를 저장할 배열
 
 // 로드 이벤트 리스너
 window.addEventListener('load', function () {
-
-
+    
     console.log("load event ==================");
     console.log("Initializing workspace...");
 
@@ -107,6 +108,9 @@ window.addEventListener('load', function () {
     document.getElementById('blockClear').addEventListener('click',fx_blk_clear);
     document.getElementById('fblockRead').addEventListener('click',fx_blk_file_read);
 
+    
+    document.getElementById('webButton').addEventListener('click', overlay);
+
 
 });
 
@@ -116,6 +120,58 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('ip_add_str').textContent = savedIp;
 
 });
+
+
+// function overlay(){
+//     // blocklyArea 요소의 사이즈를 가져옴
+//     const blocklyArea = document.getElementById('blocklyArea');
+//     const blocklyAreaRect = blocklyArea.getBoundingClientRect();
+
+//     // overlay 요소 생성
+//     const overlay = document.createElement('div');
+//     overlay.className = 'overlay';
+
+//     // overlay 내에 들어갈 텍스트 또는 요소 추가
+//     const overlayText = document.createElement('div');
+//     overlayText.className = 'overlay-text';
+//     overlayText.innerText = 'DEV';
+
+//     overlay.appendChild(overlayText);
+
+//     // blocklyArea에 오버레이를 추가
+//     blocklyArea.appendChild(overlay);
+
+//     // 오버레이 스타일 설정
+//     overlay.style.width = `${blocklyAreaRect.width}px`;
+//     overlay.style.height = `${blocklyAreaRect.height}px`;
+//     overlay.style.top = `${blocklyAreaRect.top}px`;
+//     overlay.style.left = `${blocklyAreaRect.left}px`;
+// }
+
+function overlay() {
+    const blocklyArea = document.getElementById('blocklyArea');
+
+    // overlay 요소가 이미 있는지 확인
+    if (!document.querySelector('.overlay')) {
+        // overlay 요소 생성
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+
+        // HTML 파일에서 불러온 내용을 삽입
+        overlay.innerHTML = overlayContent.default;
+
+        // blocklyArea에 오버레이를 추가
+        blocklyArea.appendChild(overlay);
+
+        // HTML이 DOM에 추가된 후에 이벤트 리스너를 등록합니다.
+        const saveButton = document.getElementById('saveButton');
+        saveButton.addEventListener('click', fx_blk_clear);
+    }
+}
+
+
+document.getElementById('webButton').addEventListener('click', overlay);
+
 
 
 function saveWorkspace() {
@@ -167,9 +223,6 @@ function loadWorkspace() {
         console.log("No workspace data found.");
     }
 }
-
-
-
 
 
 // function loadWorkspace() {
