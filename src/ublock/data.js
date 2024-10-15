@@ -43,11 +43,11 @@ javascriptGenerator.forBlock['robo_set_speed'] = function (block) {
 };
 
 //>>
-exports.robo_set_speed = (ms) => {
+exports.robo_set_speed = (speed) => {
 
-    if (ms < 0) ms = 0;
-    if (ms > 255) ms = 255;
-    const jsoncmd = { "cmd": "set_speed", "speed": ms }
+    if (speed < 0) speed = 0;
+    if (speed > 255) speed = 255;
+    const jsoncmd = { "cmd": "set_speed", "speed": speed }
     sendJsonCommand(jsoncmd);
 }
 
@@ -155,100 +155,206 @@ javascriptGenerator.forBlock['robo_hp_con'] = function (block) {
     return code;
 };
 
-class ReceiveAngle {
+
+class ReceiveInfo {
     constructor() {
         this.socket = null;
+        this.angle = 0;
         this.speed = 0;
+        this.isConnected = false;
+        this.connectTimeout = 500;  // 연결 시도 시간 제한 (500ms)
+        this.messageTimeout = 500;  // 메시지 수신 대기 시간 제한 (500ms)
     }
 
-    req() {
-
+    // async로 비동기 함수 설정
+    async connect() {
         const ipAddress = document.getElementById('ip_add_str').textContent;
-        // IP 주소가 올바르게 입력되었는지 확인
         console.log("IP Address: ", ipAddress);
 
-        // WebSocket 연결 설정 (예시)
-        this.socket = new WebSocket(`ws://${ipAddress}:92/alt_ws`);
+        if (this.socket && this.isConnected) {
+            console.log("Already connected to WebSocket.");
+            return "Already connected";
+        }
 
-        // 2. WebSocket 연결이 성공했을 때 실행될 코드
-        this.socket.addEventListener('open', function () {
-            console.log('Connected to WebSocket server');
+        return new Promise((resolve, reject) => {
+            this.socket = new WebSocket(`ws://${ipAddress}:83/ws3`);
 
-            let jsoncmd = { "cmd": "get_speed" }
-            // 3. JSON 명령어 전송
-            this.socket.send(JSON.stringify(jsoncmd));
-            console.log('JSON command sent:', jsoncmd);
-        });
-
-        // 5. 서버로부터 메시지를 받았을 때
-        this.socket.addEventListener('message', function (event) {
-            console.log('Message from server:', event.data);
-            try {
-                // JSON 형식으로 메시지 파싱
-                const jsonData = JSON.parse(event.data);
-                // 파싱된 JSON 데이터에서 필요한 값을 가져오기
-                if (jsonData && typeof jsonData === 'object') {
-                    // 예시: "speed"와 "status" 필드 값 가져오기
-                    this.speed = jsonData.speed;
-                    //console.log('Speed:', speed);
-                    // 다른 필요한 데이터를 가져오고 처리할 수 있음
-                } else {
-                    console.error('Received data is not a valid JSON object:', event.data);
+            const timeout = setTimeout(() => {
+                if (!this.isConnected) {
+                    console.error('WebSocket connection timed out');
+                    this.socket.close();  // 연결 시도 중단
+                    this.socket = null;
+                    reject(new Error('WebSocket connection timed out'));
                 }
-            } catch (error) {
-                console.error('Error parsing JSON data:', error);
-            }
-            this.socket.close()
-        });
+            }, this.connectTimeout);
 
-        // 6. WebSocket 연결이 닫혔을 때
-        this.socket.addEventListener('close', function () {
-            console.log('WebSocket connection closed');
-        });
+            this.socket.addEventListener('open', () => {
+                clearTimeout(timeout);
+                console.log('Connected to WebSocket server');
+                this.isConnected = true;
+                resolve("Connected successfully");
+            });
 
+            this.socket.addEventListener('message', (event) => {
+                console.log('Message from server:', event.data);
+                try {
+                    const jsonData = JSON.parse(event.data);
+                    if (jsonData && typeof jsonData === 'object') {
+                        this.speed = jsonData.speed;
+                        this.angle = jsonData.angle;
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON data:', error);
+                }
+            });
+
+            this.socket.addEventListener('close', () => {
+                clearTimeout(timeout);
+                console.log('WebSocket connection closed');
+                this.isConnected = false;
+                this.socket = null;
+            });
+
+            this.socket.addEventListener('error', (error) => {
+                clearTimeout(timeout);
+                console.error('WebSocket error:', error);
+                reject(new Error('WebSocket connection error'));
+            });
+        });
     }
 
-    get_speed(){
+    // async로 비동기 함수 설정
+    async req() {
+        if (!this.isConnected) {
+            //throw new Error("WebSocket is not connected.");
+            console.log(`this.isConnected = ${this.isConnected}`)
+            return;
+        }
+
+        let jsoncmd = { "cmd": "getinfo" };
+        this.socket.send(JSON.stringify(jsoncmd));
+        console.log('JSON command sent:', jsoncmd);
+
+        return new Promise((resolve, reject) => {
+            const messageHandler = (event) => {
+                try {
+                    const jsonData = JSON.parse(event.data);
+                    if (jsonData && typeof jsonData === 'object') {
+                        this.speed = jsonData.speed;
+                        this.angle = jsonData.angle;
+                        this.socket.removeEventListener('message', messageHandler); // 메시지를 수신했으므로 이벤트 리스너 제거
+                        resolve(jsonData);  // 응답 데이터를 반환
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON data:', error);
+                    reject(error);
+                }
+            };
+
+            // 메시지를 수신할 때까지 대기
+            this.socket.addEventListener('message', messageHandler);
+
+            // 타임아웃 설정 (메시지 대기 시간 초과 시 실패 처리)
+            setTimeout(() => {
+                this.socket.removeEventListener('message', messageHandler);  // 타임아웃 시 메시지 리스너 제거
+                reject(new Error('WebSocket message timed out'));
+            }, this.messageTimeout);
+        });
+    }
+
+    close() {
+        if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+            this.isConnected = false;
+            console.log("WebSocket connection closed manually.");
+        }
+    }
+
+    get_speed() {
         return this.speed;
     }
 
+    get_angle() {
+        return this.angle;
+    }
 }
-
 
 exports.robo_hp_con = async (dir_name, idiv) => {
 
     // 사용자 홈 디렉토리 가져오기
     const homeDirectory = os.homedir();
-    const lane_list = ["lane0", "lane1", "lane2"]
-    const mark_list = ["mark0", "mark1", "mark2"]
+    const lane_list = ["lane0", "lane1", "lane2"];
+    const mark_list = ["mark0", "mark1", "mark2"];
 
-    console.log(`robo_hp_con ${dir_name}, ${idiv}`)
+    print(`start robo_hp_con program`);
+    console.log(`robo_hp_con ${dir_name}, ${idiv}`);
 
-    let imgDir
+    let imgDir;
     if (mark_list.includes(dir_name)) {
         // 바탕화면 경로 구성
-        imgDir = path.join(homeDirectory, 'Desktop', 'aiimage', "mark", dir_name)
+        imgDir = path.join(homeDirectory, 'Desktop', 'aiimage', "mark", dir_name);
     }
     if (lane_list.includes(dir_name)) {
         // 바탕화면 경로 구성
-        imgDir = path.join(homeDirectory, 'Desktop', 'aiimage', "lane", dir_name)
+        imgDir = path.join(homeDirectory, 'Desktop', 'aiimage', "lane", dir_name);
     }
     const dirPath = path.resolve(imgDir);
     console.log(`Directory contents cleared: ${dirPath}`);
 
-    receiveAngle = new ReceiveAngle()
-    
-    disCamViewWindow(dirPath)
-    while (true && window.runStop) {
-        receiveAngle.req()
-        let speed = receiveAngle.get_speed()
-        //print(`save image ${dirPath}`)
-        //연결을 하여 속도를 연속적으로 받는다.
-        window.isCapturing = (speed !== 0);
-        await robo_delay(50)
+    let rcvInfo = new ReceiveInfo();
+
+    // 소켓을 한 번만 열어두고 재사용하기 위해 소켓을 생성합니다.
+    try{
+        await rcvInfo.connect();
+        console.log("end connect");
     }
-    disCamViewWindow()
-    window.isCapturing = false
+    catch{
+        window.runStop = false;
+        console.log("get the cathc")
+        return
+    }
+
+    await robo_delay(100);
+
+    disCamViewWindow(dirPath, idiv);
+    let cnt = 0;
+    let cnta = 0;
+
+    window.runStop = true;
+    while (true && window.runStop) {
+        console.log("start loop");
+        // 소켓이 연결되었는지 확인하고, 연결을 유지한 상태로 데이터 수신
+        if (rcvInfo.isConnected) {
+
+            await rcvInfo.req();
+            await robo_delay(200);
+
+            let speed = rcvInfo.get_speed();
+            let angle = rcvInfo.get_angle();
+            window.angle = angle;
+
+            console.log(`get angle:${angle}, speed:${speed}`);
+            print(`get angle:${angle}, speed:${speed}`)
+
+            // 속도에 따른 캡처 상태 결정
+            if(speed > 0) window.isCapturing= true;
+            else window.isCapturing = false;
+            
+        } 
+        
+        await robo_delay(1)
+    }
+
+    // 루프 종료 후 카메라 뷰어와 캡처 중단
+    console.log("end hp con end")
+    window.isCapturing = false;
+    disCamViewWindow();
+    rcvInfo.close()
+
+};
 
 
-}
+
+
+

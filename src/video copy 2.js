@@ -1,13 +1,15 @@
-const fs = require('fs').promises; // fs.promises를 사용하여 async/await로 동기화
+const fs = require('fs');
 const path = require('path');
 
 const { print } = require("./ublock/print");
 
 let imageCounter = 0; // 순차적인 파일 이름을 위한 카운터
-let isRunning = false;
-let lastFrameTime = 0; // 마지막 프레임의 타임스탬프를 저장
+let isCapturing = false; // 캡처 중복 방지를 위한 플래그
+let img;
 
-let ws = null;
+// <div id="cam_view_box" style="width: 300px; height: 200px; border: 1px solid #ccc;"></div>
+// <button onclick="addImage()">Add Image</button>
+// <button onclick="removeImage()">Remove Image</button>
 
 exports.AddAiCarImage = () => {
     AddAiCarImage();
@@ -25,10 +27,9 @@ AddAiCarImage = () => {
         // 캔버스의 너비와 높이를 설정
         canvas.width = camViewBox.clientWidth;
         canvas.height = camViewBox.clientHeight;
-        canvas.id = "aicarpng"
+        canvas.id = "aicarpng";
 
         // Electron 환경에서는 __dirname을 사용하여 이미지 경로 설정
-        const path = require('path');
         const imgPath = path.join(__dirname, './images/aicar.png');
         const img = new Image();
         img.src = `file://${imgPath}`;  // 절대 경로 사용
@@ -63,7 +64,6 @@ removeAiCarImage = () => {
     }
 };
 
-
 exports.disCamViewWindow = (save_dir_name, idiv) => {
 
     console.log("start show cam window display");
@@ -74,22 +74,15 @@ exports.disCamViewWindow = (save_dir_name, idiv) => {
     // 기존에 생성된 영상 창이 있으면 제거 (자원 청소)
     var existingCanvas = document.getElementById('camCanvas');
     if (existingCanvas) {
-        isRunning = false;
         console.log("Removing existing camera stream canvas");
-        existingCanvas.remove();
 
-        // WebSocket 정리
-        if(ws){
-            ws.onmessage = null;  // 이벤트 리스너 제거
-            ws.onopen = null;
-            ws.onerror = null;
-            ws.onclose = null;
-            ws.close();  // WebSocket 연결 닫기
-            ws = null;  // WebSocket 객체를 null로 설정하여 재사용 방지
-            console.log("WebSocket connection closed.");
+        if (img && img.src) {
+            img.src = '';
+            img.onload = null;
+            console.log("Image source cleared and onload event removed.");
         }
-        
-        window.isCapturing = false; // 캡처 중단
+        existingCanvas.remove();
+        isCapturing = false; // 캡처 중단
         console.log("Camera stream stopped and resources cleaned up.");
         AddAiCarImage();
         return;  // 기존 캔버스를 삭제한 후 함수 종료
@@ -114,54 +107,63 @@ exports.disCamViewWindow = (save_dir_name, idiv) => {
     // 생성한 canvas 태그를 camViewBox에 직접 추가
     camViewBox.appendChild(canvas);
 
+    const ipAddress = document.getElementById('ip_add_str').textContent;
+    console.log("IP Address: ", ipAddress);
+
+    // MJPEG 스트림을 받아올 <img> 태그 생성
+    img = document.createElement('img');
+    img.src = `http://${ipAddress}:82/alt_stream`; // ESP32-CAM의 MJPEG 스트림 URL
+    img.style.display = 'none'; // <img> 요소를 화면에 표시하지 않음
+    document.body.appendChild(img);
+
     const context = canvas.getContext('2d');
     window.isCapturing = false;
     imageCounter = 0;
     let runCount = 0;
 
-    const ipAddress = document.getElementById('ip_add_str').textContent;
-    console.log("IP Address: ", ipAddress);
-
-    // WebSocket 연결 설정
-    ws = new WebSocket(`ws://${ipAddress}:81/ws1`); // WebSocket으로 ESP32에 연결
-    ws.binaryType = 'blob';  // WebSocket 바이너리 타입을 Blob으로 설정
-
-    ws.onopen = function() {
-        console.log('WebSocket connection opened');
-        isRunning = true;
-    };
-
-    ws.onmessage = function(event) {
-        const blob = event.data;
-
-        // Blob 데이터를 사용하여 이미지를 즉시 처리
-        createImageBitmap(blob).then(function(imgBitmap) {
-            context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스 내용 삭제
-            context.drawImage(imgBitmap, 0, 0, canvas.width, canvas.height);  // 비트맵 이미지를 캔버스에 그리기
-
-            console.log(`xrcount = ${runCount}`);
-            
-            // 일정 간격으로 이미지를 저장
-            if (window.isCapturing && runCount++ % idiv === 0) {
-                canvas.toBlob(function(blob) {
-                    if (blob) {
-                        saveImage(blob, save_dir_name);
-                    }
-                }, 'image/jpeg');
-            }
-        }).catch(function(error) {
-            console.error('Error processing WebSocket image:', error);
+    // canvas.toBlob을 Promise로 래핑하는 함수
+    const canvasToBlob = (canvas, type = 'image/jpeg', quality = 0.92) => {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    resolve(blob);
+                } else {
+                    reject(new Error('Failed to convert canvas to blob'));
+                }
+            }, type, quality);
         });
     };
 
-    ws.onclose = function() {
-        console.log('WebSocket connection closed');
-        isRunning = false;
+    // 이미지가 로드될 때마다 캔버스에 그리기
+    img.onload = async () => {
+
+        context.clearRect(0, 0, canvas.width, canvas.height);  // 기존 캔버스를 지우고 새로 그리기
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        if (window.isCapturing) {
+            console.log(`runCount = ${runCount}`);
+            if ( runCount++ % idiv === 0) {
+
+                try {
+                    const blob = await canvasToBlob(canvas, 'image/jpeg');
+                    if (blob) {
+                        await saveImage(blob, save_dir_name);
+                    }
+                } catch (error) {
+                    console.error('Error capturing canvas image:', error);
+                }
+
+            }
+        }
+        // 새로운 이미지를 가져오기 위해 src를 재설정
+        img.src = `http://${ipAddress}:82/alt_stream`;
     };
 
-    ws.onerror = function(error) {
-        console.error('WebSocket error:', error);
+    img.onerror = (error) => {
+        console.error('Error loading MJPEG stream:', error);
     };
+    console.log("Camera stream started and canvas set.");
+
 };
 
 const saveImage = async (blob, saveDir) => {
@@ -180,23 +182,26 @@ const saveImage = async (blob, saveDir) => {
         : '-' + String(Math.abs(window.angle)).padStart(2, '0');  // 음수일 경우 부호 포함 3자리로 맞춤
     const fileName = `${String(imageCounter).padStart(3, '0')}_${angleValue}.jpg`;
     console.log(`==>fileName:${fileName}`);
-    print(`==>fileName:${fileName}`);
 
     // 디렉토리가 없으면 생성
-    try {
-        await fs.mkdir(saveDir, { recursive: true });
-    } catch (err) {
-        console.error('Error creating directory:', err);
-        return;
+    if (!fs.existsSync(saveDir)) {
+        fs.mkdirSync(saveDir, { recursive: true });
     }
     const filePath = path.join(saveDir, fileName);
-    // 파일 저장
-    try {
-        await fs.writeFile(filePath, buffer);
-        console.log(`save: ${fileName}`);
-        console.log('Image saved successfully:', filePath);
-        imageCounter++; // 다음 이미지를 위해 카운터 증가
-    } catch (err) {
-        console.error('Error saving file:', err);
-    }
+
+    // 파일 저장을 프로미스로 래핑하여 동기화
+    await new Promise((resolve, reject) => {
+        fs.writeFile(filePath, buffer, (err) => {
+            console.log(`save: ${fileName}`);
+
+            if (err) {
+                console.error('Error saving file:', err);
+                reject(err);
+            } else {
+                console.log('Image saved successfully:', filePath);
+                imageCounter++; // 다음 이미지를 위해 카운터 증가
+                resolve();
+            }
+        });
+    });
 };

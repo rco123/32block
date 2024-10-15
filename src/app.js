@@ -35,14 +35,13 @@ const { ipcRenderer } = require('electron');
 const BlocklyMsg = require('blockly/msg/ko'); // 한글 메시지를 가져옴
 //const { robo_delay, robo_beep } = require("./ublock/robo.js")
 const {runJavaCode, extJavaCode} = require("./runCode")
-
+const {fxCodeOutClean} = require("./ublock/print")
 
 
 // // 메시지 파일을 Blockly에 적용
 // Blockly.setLocale = function (locale) {
 //     Object.assign(Blockly.Msg, locale);
 // };
-
 // 메시지 파일을 직접 적용
 // Object.assign(Blockly.Msg, BlocklyMsg);
 
@@ -52,6 +51,7 @@ window.blocklyBox;
 window.blocklyArea
 window.runStop = true // 코드를 실행중지 제어
 window.isCapturing = false; // 영상수집결정
+window.angle = 0;
 
 
 let toolbox; // toolbox 변수를 추가
@@ -82,14 +82,13 @@ window.addEventListener('load', function () {
     
     loadWorkspace(); // 바탕화면 불러오기
 
-
-
     this.window.addEventListener('resize', onBloclkyBoxResize, true);
 
-    camViewButton = document.getElementById('camViewButton');
-    console.log("camViewButton    ", camViewButton);
-    camViewButton.addEventListener('click', disCamViewWindow, false);
-
+    
+    document.getElementById('camViewButton').addEventListener('click', () => {
+        window.isCapturing = false
+        disCamViewWindow();
+    });
 
     // document.getElementById('generateCodeButton').addEventListener('click', generateJavaCode);
     // document.getElementById('runCodeButton').addEventListener('click', runJavaCode);
@@ -100,7 +99,7 @@ window.addEventListener('load', function () {
     
     document.getElementById('code_run').addEventListener('click',runJavaCode);
     document.getElementById('code_kill').addEventListener('click',extJavaCode);
-    document.getElementById('code_clear').addEventListener('click',clear_code_out);
+    document.getElementById('code_clear').addEventListener('click',fxCodeOutClean);
     
     document.getElementById('ip_setting').addEventListener('click',changeIp);
 
@@ -108,7 +107,6 @@ window.addEventListener('load', function () {
     document.getElementById('blockClear').addEventListener('click',fx_blk_clear);
     document.getElementById('fblockRead').addEventListener('click',fx_blk_file_read);
 
-   
 
 });
 
@@ -119,10 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-
-function clear_code_out(){
-    document.getElementById('code_out').value = ''; // textarea의 내용을 빈 문자열로 설정
-}
 
 function saveWorkspace() {
     // 워크스페이스를 XML 형식으로 변환

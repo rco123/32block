@@ -174,15 +174,25 @@ exports.xtoolbox =
 	</category>
 
 	<category name="DATA_BLK" colour="%{BKY_VARIABLES_HUE}">
-		<block type="robo_set_speed"></block>
+		<block type="robo_set_speed">
+    <value name="NAME">
+          <shadow type="math_number">
+            <field name="NUM">20</field>
+          </shadow>
+        </value>
+    </block>
+
 		<block type="robo_dir_clean"></block>
-		<block type="robo_hp_con"></block>
+		<block type="robo_hp_con">
+        <value name="IDIV">
+          <shadow type="math_number">
+            <field name="NUM">5</field>
+          </shadow>
+        </value>
+    </block>
 	</category>
 	
 	<sep></sep>
-
-
-
 
 	
 	</xml>

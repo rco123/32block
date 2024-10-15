@@ -5,14 +5,20 @@ const { javascriptGenerator } = require('blockly/javascript');  // JavaScript �
 const maxLines = 50; // 최대 줄 수 설정
 const lines = []; // 출력창에 표시될 텍스트를 저장할 
 
-exports.fxCodeOut= function(str){
+exports.fxCodeOut= (str)=>{
     fxCodeOut(str)
 }
+exports.fxCodeOutClean = ()=>{
+    lines.length = 0;  // 배열의 길이를 0으로 설정하여 모든 요소 삭제
+    console.log('Code output cleaned.');
+    fxCodeOut("")
+}
+
 function fxCodeOut(str) {
     
     const outputDiv = document.getElementById('code_out');
     const newText = str;
-    console.log("run fxCodeOut ", str)
+    //console.log("run fxCodeOut ", str)
 
     // 배열에 새로운 줄 추가
     lines.push(newText);
