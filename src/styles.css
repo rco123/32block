@@ -84,7 +84,6 @@ h1 {
 }
 
 
-
 #divLineBar_width {
     height: calc(100% - 100px);
     /*width: 10px;*/
@@ -109,6 +108,7 @@ h1 {
 
     border-width: 1px;
     border-style: solid;
+    position: relative; /* 부모 요소의 위치를 기준으로 자식 요소 배치 */
 }
 
 

@@ -110,9 +110,10 @@ window.addEventListener('load', function () {
 
     
     document.getElementById('webButton').addEventListener('click', overlay);
-
+    document.getElementById('aitrain').addEventListener('click', aitrain);
 
 });
+
 
 // 페이지 로드 시 저장된 IP 불러오기
 document.addEventListener('DOMContentLoaded', () => {
@@ -121,35 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-
-// function overlay(){
-//     // blocklyArea 요소의 사이즈를 가져옴
-//     const blocklyArea = document.getElementById('blocklyArea');
-//     const blocklyAreaRect = blocklyArea.getBoundingClientRect();
-
-//     // overlay 요소 생성
-//     const overlay = document.createElement('div');
-//     overlay.className = 'overlay';
-
-//     // overlay 내에 들어갈 텍스트 또는 요소 추가
-//     const overlayText = document.createElement('div');
-//     overlayText.className = 'overlay-text';
-//     overlayText.innerText = 'DEV';
-
-//     overlay.appendChild(overlayText);
-
-//     // blocklyArea에 오버레이를 추가
-//     blocklyArea.appendChild(overlay);
-
-//     // 오버레이 스타일 설정
-//     overlay.style.width = `${blocklyAreaRect.width}px`;
-//     overlay.style.height = `${blocklyAreaRect.height}px`;
-//     overlay.style.top = `${blocklyAreaRect.top}px`;
-//     overlay.style.left = `${blocklyAreaRect.left}px`;
-// }
-
 function overlay() {
-    const blocklyArea = document.getElementById('blocklyArea');
+
+    const con_view_area = document.getElementById('con_view_area');
 
     // overlay 요소가 이미 있는지 확인
     if (!document.querySelector('.overlay')) {
@@ -161,7 +136,7 @@ function overlay() {
         overlay.innerHTML = overlayContent.default;
 
         // blocklyArea에 오버레이를 추가
-        blocklyArea.appendChild(overlay);
+        con_view_area.appendChild(overlay);
 
         // HTML이 DOM에 추가된 후에 이벤트 리스너를 등록합니다.
         const saveButton = document.getElementById('saveButton');

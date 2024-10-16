@@ -9,6 +9,7 @@ const { sendJsonCommand, robo_delay } = require("./robo")
 const { print } = require("./print")
 
 const { disCamViewWindow } = require("../video.js")
+const {mark_train} = require("../marktrain.js")
 
 const colorVal = 200;
 
@@ -41,8 +42,6 @@ javascriptGenerator.forBlock['robo_set_speed'] = function (block) {
     let code = `robo_set_speed(${value_name})`
     return code + '\n';
 };
-
-//>>
 exports.robo_set_speed = (speed) => {
 
     if (speed < 0) speed = 0;
@@ -50,8 +49,10 @@ exports.robo_set_speed = (speed) => {
     const jsoncmd = { "cmd": "set_speed", "speed": speed }
     sendJsonCommand(jsoncmd);
 }
+//>
 
 
+//<
 Blockly.Blocks['robo_dir_clean'] = {
     init: function () {
         this.appendDummyInput()
@@ -79,7 +80,6 @@ javascriptGenerator.forBlock['robo_dir_clean'] = function (block) {
     var code = 'robo_dir_clean("' + dropdown_name + '")\n';
     return code;
 };
-
 exports.robo_dir_clean = async (dir_name) => {
 
     // 사용자 홈 디렉토리 가져오기
@@ -108,6 +108,64 @@ exports.robo_dir_clean = async (dir_name) => {
         console.error(`Error clearing directory contents: ${dirPath}`, err);
     }
 }
+//>
+
+
+//<<
+Blockly.Blocks['robo_mark_train'] = {
+    init: function () {
+        this.appendDummyInput()
+            .appendField("robo_mark_train(");
+        this.appendValueInput("NAME")
+            .setCheck("Number")
+        this.appendDummyInput()
+            .appendField(")");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(colorVal);
+        this.setTooltip("");
+        this.setHelpUrl("");
+    }
+};
+javascriptGenerator.forBlock['robo_mark_train'] = function (block) {
+    let value_name = javascriptGenerator.valueToCode(block, 'NAME', javascriptGenerator.ORDER_ATOMIC);
+    let code = `robo_mark_train(${value_name})`
+    return code + '\n';
+};
+
+exports.robo_mark_train = (epoch) => {
+    mark_train(epoch);
+}
+//>>
+
+//<<
+Blockly.Blocks['robo_lane_train'] = {
+    init: function () {
+        this.appendDummyInput()
+            .appendField("robo_lane_train(");
+        this.appendValueInput("NAME")
+            .setCheck("Number")
+        this.appendDummyInput()
+            .appendField(")");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(colorVal);
+        this.setTooltip("");
+        this.setHelpUrl("");
+    }
+};
+javascriptGenerator.forBlock['robo_lane_train'] = function (block) {
+    let value_name = javascriptGenerator.valueToCode(block, 'NAME', javascriptGenerator.ORDER_ATOMIC);
+    let code = `robo_lane_train(${value_name})`
+    return code + '\n';
+};
+exports.robo_lane_train = (epoch) => {
+    lane_train(epoch);
+}
+//>>
+
 
 
 //<<

@@ -58,7 +58,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',  // 기본 HTML 파일
-      filename: 'test.html',
+      //filename: 'test.html',
     }),
     new CopyWebpackPlugin({
       patterns: [
@@ -71,6 +71,11 @@ module.exports = {
    
 
   ],
+  
+  externals: {
+    '@tensorflow/tfjs-node': 'commonjs @tensorflow/tfjs-node',
+  },
+  
   target: 'electron-renderer',  // Electron 환경에서 렌더링
 
   

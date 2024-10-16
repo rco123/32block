@@ -2,8 +2,10 @@ const { javascriptGenerator } = require('blockly/javascript');
 
 const { robo_delay, robo_beep, robo_move, robo_stop } = require("./ublock/robo")
 const {robo_cam_run} = require("./ublock/cam")
-const {robo_set_speed, robo_dir_clean,robo_hp_con} = require("./ublock/data")
+const {robo_set_speed, robo_dir_clean,robo_hp_con, robo_mark_train} = require("./ublock/data")
 const {print} = require("./ublock/print")
+
+const {mark_train} = require("./marktrain")
 
 
 // Blockly JavaScript 생성기 사용

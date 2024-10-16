@@ -63,3 +63,7 @@ app.on('window-all-closed', () => {
   }
 })
 
+// tfjs
+app.allowRendererProcessReuse = false;
+
+

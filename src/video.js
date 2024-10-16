@@ -1,5 +1,7 @@
-const fs = require('fs').promises; // fs.promises를 사용하여 async/await로 동기화
+//const fs = require('fs').promises; // fs.promises를 사용하여 async/await로 동기화
 const path = require('path');
+const fs = require('fs'); // fs.promises를 사용하여 async/await로 동기화
+
 
 const { print } = require("./ublock/print");
 

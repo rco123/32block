@@ -190,6 +190,23 @@ exports.xtoolbox =
           </shadow>
         </value>
     </block>
+
+    <block type="robo_mark_train">
+    <value name="NAME">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+    </block>
+
+    <block type="robo_lane_train">
+    <value name="NAME">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+    </block>
+
 	</category>
 	
 	<sep></sep>
