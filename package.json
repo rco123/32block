@@ -16,6 +16,7 @@
     "@tensorflow/tfjs-node": "^4.20.0",
     "aws-sdk": "^2.1691.0",
     "blockly": "^11.0.0",
+    "chart.js": "^4.4.5",
     "electron": "^32.1.2",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.2.0",

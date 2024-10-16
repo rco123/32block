@@ -10,6 +10,8 @@ const { print } = require("./print")
 
 const { disCamViewWindow } = require("../video.js")
 const {mark_train} = require("../marktrain.js")
+const {lane_train} = require("../lanetrain.js")
+
 
 const colorVal = 200;
 
