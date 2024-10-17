@@ -28,6 +28,8 @@ const os = require('os')
 
 require('./styles.css');
 require('./css_s/bootstrap.min.css');
+require('./styleimgview.css');
+
 
 //require('./custom-dialog.js')
 
@@ -37,8 +39,11 @@ const BlocklyMsg = require('blockly/msg/ko'); // 한글 메시지를 가져옴
 const {runJavaCode, extJavaCode} = require("./runCode")
 const {fxCodeOutClean} = require("./ublock/print")
 
-
 const overlayContent = require('./test.html');
+const {fxLaneView} = require('./laneview.js')
+const {fxMarkView} = require('./markview.js')
+
+
 
 // // 메시지 파일을 Blockly에 적용
 // Blockly.setLocale = function (locale) {
@@ -108,9 +113,8 @@ window.addEventListener('load', function () {
     document.getElementById('blockClear').addEventListener('click',fx_blk_clear);
     document.getElementById('fblockRead').addEventListener('click',fx_blk_file_read);
 
-    
-    document.getElementById('webButton').addEventListener('click', overlay);
-    document.getElementById('aitrain').addEventListener('click', aitrain);
+    document.getElementById('lane_view').addEventListener('click', fxLaneView);
+    document.getElementById('mark_view').addEventListener('click', fxMarkView);
 
 });
 
@@ -121,32 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('ip_add_str').textContent = savedIp;
 
 });
-
-function overlay() {
-
-    const con_view_area = document.getElementById('con_view_area');
-
-    // overlay 요소가 이미 있는지 확인
-    if (!document.querySelector('.overlay')) {
-        // overlay 요소 생성
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
-
-        // HTML 파일에서 불러온 내용을 삽입
-        overlay.innerHTML = overlayContent.default;
-
-        // blocklyArea에 오버레이를 추가
-        con_view_area.appendChild(overlay);
-
-        // HTML이 DOM에 추가된 후에 이벤트 리스너를 등록합니다.
-        const saveButton = document.getElementById('saveButton');
-        saveButton.addEventListener('click', fx_blk_clear);
-    }
-}
-
-
-document.getElementById('webButton').addEventListener('click', overlay);
-
 
 
 function saveWorkspace() {
